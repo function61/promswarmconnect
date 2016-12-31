@@ -121,8 +121,13 @@ func doItOnce(cli *client.Client, previousHash string) (string, error) {
 	newHash := fmt.Sprintf("%x", md5.Sum(output))
 
 	if newHash != previousHash {
-		fmt.Println("PromServiceTargetsFile changed, wrote /etc/prometheus/targets-from-swarm.json")
-		ioutil.WriteFile("/etc/prometheus/targets-from-swarm.json", output, 0755)
+		err := ioutil.WriteFile("/etc/prometheus/targets-from-swarm.json", output, 0755)
+
+		if err != nil {
+			fmt.Println("PromServiceTargetsFile changed, write /etc/prometheus/targets-from-swarm.json FAILED:", err)
+		} else {
+			fmt.Println("PromServiceTargetsFile changed, wrote /etc/prometheus/targets-from-swarm.json")
+		}
 	} else {
 		fmt.Println("No changes")
 	}
