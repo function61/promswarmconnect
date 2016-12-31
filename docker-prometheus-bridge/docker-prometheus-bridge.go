@@ -58,7 +58,7 @@ func extractIp(mangledIp string) string {
 	return ip
 }
 
-func doItOnce(cli *client.Client, previousHash string) (string, error) {
+func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error) {
 	// list services
 
 	services, err := cli.ServiceList(context.Background(), types.ServiceListOptions{})
@@ -154,9 +154,9 @@ func main() {
 			}
 		}
 
-		previousHash, err = doItOnce(cli, previousHash)
+		previousHash, err = syncFromDockerSwarm(cli, previousHash)
 		if err != nil {
-			fmt.Println("doItOnce failed:", err)
+			fmt.Println("syncFromDockerSwarm failed:", err)
 		}
 
 		time.Sleep(5 * time.Second)
