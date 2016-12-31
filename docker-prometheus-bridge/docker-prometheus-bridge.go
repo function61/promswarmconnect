@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"time"
 	"encoding/json"
 	"crypto/md5"
@@ -17,7 +18,7 @@ import (
 /*
 	{
 		"targets": [
-			"10.0.0.23"
+			"10.0.0.23:80"
 		],
 		"labels": {
 			"job": "html2pdf"
@@ -31,9 +32,9 @@ type PromServiceTargetsList struct {
 
 type PromServiceTargetsFile []PromServiceTargetsList
 
-
-func hasMetricsEndpointEnv(envs []string) bool {
-	found := false
+// TODO: parsing support is sucky
+// TODO: does not yet support parsing the actual path
+func parseMetricsEndpointEnv(envs []string) (bool, int, string) {
 	for _, env := range envs {
 		match, err := regexp.MatchString("^METRICS_ENDPOINT=.+", env)
 		if err != nil {
@@ -41,12 +42,23 @@ func hasMetricsEndpointEnv(envs []string) bool {
 		}
 
 		if (match) {
-			found = true
-			break
+			portRe := regexp.MustCompile(":[0-9]+")
+
+			port := portRe.FindString(env)
+			if port == "" {
+				port = ":80"
+			}
+
+			portI, err := strconv.Atoi(port[1:]) // ":80" => 80
+			if err != nil {
+				panic(err)
+			}
+
+			return true, portI, "/metrics"
 		}
 	}
 
-	return found
+	return false, 0, "" // hasMetricsEndpoint, metricsPort, metricsPath
 }
 
 // for some reason the ips contain a netmask
@@ -88,7 +100,9 @@ func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error
 			continue
 		}
 
-		if (!hasMetricsEndpointEnv(task.Spec.ContainerSpec.Env)) {
+		hasMetricsEndpoint, metricsPort, _ := parseMetricsEndpointEnv(task.Spec.ContainerSpec.Env)
+
+		if (!hasMetricsEndpoint) {
 			continue
 		}
 
@@ -97,7 +111,7 @@ func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error
 
 			taskServiceName := serviceByName[ task.ServiceID ].Spec.Name
 
-			serviceAddresses[ taskServiceName ] = append(serviceAddresses[ taskServiceName ], ip)
+			serviceAddresses[ taskServiceName ] = append(serviceAddresses[ taskServiceName ], ip + ":" + strconv.Itoa(metricsPort))
 		}
 	}
 
