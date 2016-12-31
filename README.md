@@ -4,6 +4,8 @@ What?
 Integrates Docker (Swarm) with Prometheus via the file config option
 (Prometheus currently [doesn't have support for Swarm mode](https://github.com/prometheus/prometheus/issues/1766)).
 
+This image contains the whole bundle, Prometheus + docker-prometheus-bridge + configuration for truly automated service discovery.
+
 ```
 +--------------------------+           +----------------------+
 |                          | writes    |                      |
@@ -26,6 +28,8 @@ Only advertises services that have environment variable defined: `METRICS_ENDPOI
 
 Uses service name as job name in Prometheus.
 
+NOTE: current limitation is that you have to deploy Prometheus on the same node as a Swarm manager!
+(use constraint with `$ docker service create` if/when you have a multi-node cluster)
 
 Howto run
 ---------
