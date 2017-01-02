@@ -78,10 +78,10 @@ func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error
 		return previousHash, err
 	}
 
-	serviceByName := map[string]swarm.Service{}
+	serviceById := map[string]swarm.Service{}
 
 	for _, service := range services {
-		serviceByName[ service.ID ] = service
+		serviceById[ service.ID ] = service
 	}
 
 	// list tasks
@@ -109,7 +109,7 @@ func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error
 		if (len(task.NetworksAttachments) > 0 && len(task.NetworksAttachments[0].Addresses) > 0) {
 			ip := extractIp(task.NetworksAttachments[0].Addresses[0])
 
-			taskServiceName := serviceByName[ task.ServiceID ].Spec.Name
+			taskServiceName := serviceById[ task.ServiceID ].Spec.Name
 
 			serviceAddresses[ taskServiceName ] = append(serviceAddresses[ taskServiceName ], ip + ":" + strconv.Itoa(metricsPort))
 		}
