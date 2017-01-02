@@ -1,6 +1,9 @@
 What?
 -----
 
+tl;dr: use `-e METRICS_ENDPOINT=/metrics` (or `METRICS_ENDPOINT=:8080/metrics` if using port != 80) for your Docker Swarm service,
+and Prometheus will automatically discover your service and scrape metrics from it.
+
 Integrates Docker (Swarm) with Prometheus via the file config option
 (Prometheus currently [doesn't have support for Swarm mode](https://github.com/prometheus/prometheus/issues/1766)).
 
