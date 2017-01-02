@@ -115,7 +115,7 @@ func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error
 		}
 	}
 
-	outFile := PromServiceTargetsFile{}
+	promServiceTargetsFileContent := PromServiceTargetsFile{}
 
 	for serviceId, addresses := range serviceAddresses {
 		labels := map[string]string{
@@ -124,18 +124,18 @@ func syncFromDockerSwarm(cli *client.Client, previousHash string) (string, error
 
 		serviceTarget := PromServiceTargetsList{addresses, labels}
 
-		outFile = append(outFile, serviceTarget)		
+		promServiceTargetsFileContent = append(promServiceTargetsFileContent, serviceTarget)		
 	}
 
-	output, err := json.MarshalIndent(outFile, "", "    ")
+	promServiceTargetsFileContentJson, err := json.MarshalIndent(promServiceTargetsFileContent, "", "    ")
 	if err != nil {
 		panic(err)
 	}
 
-	newHash := fmt.Sprintf("%x", md5.Sum(output))
+	newHash := fmt.Sprintf("%x", md5.Sum(promServiceTargetsFileContentJson))
 
 	if newHash != previousHash {
-		err := ioutil.WriteFile("/etc/prometheus/targets-from-swarm.json", output, 0755)
+		err := ioutil.WriteFile("/etc/prometheus/targets-from-swarm.json", promServiceTargetsFileContentJson, 0755)
 
 		if err != nil {
 			fmt.Println("PromServiceTargetsFile changed, write /etc/prometheus/targets-from-swarm.json FAILED:", err)
