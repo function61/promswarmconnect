@@ -31,6 +31,9 @@ Uses service name as job name in Prometheus.
 NOTE: current limitation is that you have to deploy Prometheus on the same node as a Swarm manager!
 (use constraint with `$ docker service create` if/when you have a multi-node cluster)
 
+DISCLAIMER: This is the first Go program I wrote, so it probably violates many Go idioms I am yet to learn.
+
+
 Howto run
 ---------
 
@@ -53,7 +56,7 @@ This is the file format that docker-prometheus-bridge generated for Prometheus:
 [
 	{
 		"targets": [
-			"10.0.0.23"
+			"10.0.0.23:80"
 		],
 		"labels": {
 			"job": "html2pdf"
