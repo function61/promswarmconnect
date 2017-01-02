@@ -61,7 +61,7 @@ func parseMetricsEndpointEnv(envs []string) (bool, int, string) {
 	return false, 0, "" // hasMetricsEndpoint, metricsPort, metricsPath
 }
 
-// for some reason the ips contain a netmask
+// for some reason the ips contain a netmask like this "10.0.0.7/24"
 func extractIp(mangledIp string) string {
 	re := regexp.MustCompile("^[0-9\\.]+")
 
