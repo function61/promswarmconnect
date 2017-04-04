@@ -96,3 +96,5 @@ Alternatives & other reading
 
 - https://github.com/bvis/docker-prometheus-swarm - doesn't export metrics from containers per se,
   but container metadata with cadvisor AND node metadata with node-exporter)
+- https://github.com/docker/docker/issues/27307 roadmap for Docker-internal Prometheus integration
+- https://github.com/prometheus/prometheus/issues/1766 Docker Swarm integration for Prometheus
