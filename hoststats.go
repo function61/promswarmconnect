@@ -111,7 +111,7 @@ func NewMetrics() *Metrics {
 func pollCpu(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
-	stat, err := linux.ReadStat("/proc/stat")
+	stat, err := linux.ReadStat("/hostproc/stat")
 	if err != nil {
 		log.Fatalf("err:", err)
 	}
@@ -123,7 +123,7 @@ func pollCpu(wg *sync.WaitGroup, m *Metrics) {
 func pollRam(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
-	stat, err := linux.ReadMemInfo("/proc/meminfo")
+	stat, err := linux.ReadMemInfo("/hostproc/meminfo")
 	if err != nil {
 		log.Fatalf("err:", err)
 	}
@@ -135,7 +135,7 @@ func pollRam(wg *sync.WaitGroup, m *Metrics) {
 func pollNet(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
-	rows, err := linux.ReadNetworkStat("/proc/net/dev")
+	rows, err := linux.ReadNetworkStat("/hostproc/net/dev")
 
 	if err != nil {
 		log.Fatalf("err:", err)
@@ -175,7 +175,7 @@ func pollDisk(wg *sync.WaitGroup, m *Metrics) {
 func pollIOPS(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
-	rows, err := linux.ReadDiskStats("/proc/diskstats")
+	rows, err := linux.ReadDiskStats("/hostproc/diskstats")
 
 	if err != nil {
 		log.Fatalf("err:", err)
@@ -205,7 +205,7 @@ func pollIOPS(wg *sync.WaitGroup, m *Metrics) {
 func vmstat(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
-	stat, err := linux.ReadVMStat("/proc/vmstat")
+	stat, err := linux.ReadVMStat("/hostproc/vmstat")
 
 	if err != nil {
 		log.Fatalf("err:", err)
