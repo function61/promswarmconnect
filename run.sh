@@ -2,7 +2,7 @@
 
 # ugly hack - would've used forego as process manager but it
 # requires glibc and thus doesn't work with busybox
-docker-prometheus-bridge &
+docker-prometheus-bridge 2>&1 > /docker-prometheus-bridge.log &
 
 exec prometheus \
 	-config.file=/etc/prometheus/prometheus.yml \
