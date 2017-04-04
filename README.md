@@ -49,7 +49,7 @@ Basically, you need to run this as a Swarm service (for Prometheus to have acces
 
 ```
 $ docker service create --network YOUR_NETWORK --name prometheus -p 9090:9090 \
-	-e METRICS_ENDPOINT=:80/metrics \
+	-e METRICS_ENDPOINT=:8081/metrics \
 	--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
 	--mount type=bind,src=/proc,dst=/hostproc \
 	--mount type=volume,src=prometheus-dev,dst=/prometheus \

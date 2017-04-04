@@ -1,7 +1,7 @@
 FROM prom/prometheus:v1.4.1
 
-ENV METRICS_ENDPOINT=:80/metrics
-LABEL METRICS_ENDPOINT=:80/metrics
+ENV METRICS_ENDPOINT=:8081/metrics
+LABEL METRICS_ENDPOINT=:8081/metrics
 
 ADD conf/targets-from-swarm.initially_empty.json /etc/prometheus/targets-from-swarm.json
 ADD conf/prometheus.yml /etc/prometheus/prometheus.yml

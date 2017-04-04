@@ -131,7 +131,7 @@ func containerStatsPollerTask(cli *client.Client, target ScrapeTarget, container
 
 func promHttpTask() {
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
 func containerMetricsTask(cli *client.Client, wg *sync.WaitGroup) {
