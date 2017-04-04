@@ -100,3 +100,14 @@ Alternatives & other reading
   but container metadata with cadvisor AND node metadata with node-exporter)
 - https://github.com/docker/docker/issues/27307 roadmap for Docker-internal Prometheus integration
 - https://github.com/prometheus/prometheus/issues/1766 Docker Swarm integration for Prometheus
+
+
+Roadmap
+-------
+
+- I'm not happy with this "bridge" binary running inside the Prometheus container -
+  we could impersonate Consul catalog server and integrate via that option over HTTP.
+- Currently the metrics work ins a single-node setting only. We could fix that
+  with a leader + agent -based architecture, where Prometheus only contacts the
+  leader which reports all agents' (runs on each node) IPs as Prom targets, so
+  in result Prometheus could scrape the entire cluster's metrics.
