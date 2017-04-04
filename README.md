@@ -1,7 +1,7 @@
 What?
 -----
 
-tl;dr: use `-e METRICS_ENDPOINT=/metrics` (or `METRICS_ENDPOINT=:8080/metrics`
+TL;DR: use `-e METRICS_ENDPOINT=/metrics` (or `METRICS_ENDPOINT=:8080/metrics`
 if using port != 80) for your Docker Swarm service, and
 [Prometheus](https://prometheus.io/) will automatically discover your service
 and scrape metrics from it.

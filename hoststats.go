@@ -172,7 +172,7 @@ func pollDisk(wg *sync.WaitGroup, m *Metrics) {
 	m.disk_used.Set(float64(stat.Used))
 }
 
-func pollIOPS(wg *sync.WaitGroup, m *Metrics) {
+func pollIos(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
 	rows, err := linux.ReadDiskStats("/hostproc/diskstats")
@@ -224,22 +224,22 @@ func collectHostStatsTask(wg *sync.WaitGroup) {
 	// TODO: fix clock drift
 	for {
 		pollWg.Add(1)
-		pollCpu(pollWg, metrics)
+		go pollCpu(pollWg, metrics)
 
 		pollWg.Add(1)
-		pollRam(pollWg, metrics)
+		go pollRam(pollWg, metrics)
 
 		pollWg.Add(1)
-		pollNet(pollWg, metrics)
+		go pollNet(pollWg, metrics)
 
 		pollWg.Add(1)
-		pollDisk(pollWg, metrics)
+		go pollDisk(pollWg, metrics)
 
 		pollWg.Add(1)
-		vmstat(pollWg, metrics)
+		go vmstat(pollWg, metrics)
 
 		pollWg.Add(1)
-		pollIOPS(pollWg, metrics)
+		go pollIos(pollWg, metrics)
 
 		// wait until all poll operations are done
 		pollWg.Wait()
