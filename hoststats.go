@@ -184,7 +184,7 @@ func pollIOPS(wg *sync.WaitGroup, m *Metrics) {
 	for _, stat := range rows {
 		// skip pseudo-disks like "ram", "dm" and "loop"
 		// also, skip partitions like "sda1", "sda2" etc.
-		if stat.Name != "sda" && stat.Name != "sdb" {
+		if stat.Name != "sda" && stat.Name != "sdb" && stat.Name != "vda" {
 			continue
 		}
 
