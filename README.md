@@ -90,6 +90,8 @@ $ make
 
 You now have `./app` statically compiled.
 
+Running `$ docker build` would bake that into a Docker image.
+
 
 Alternatives & other reading
 ----------------------------
