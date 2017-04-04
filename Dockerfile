@@ -1,4 +1,4 @@
-FROM prom/prometheus:v1.4.1
+FROM prom/prometheus:v1.5.2
 
 ENV METRICS_ENDPOINT=:8081/metrics
 LABEL METRICS_ENDPOINT=:8081/metrics
