@@ -1,0 +1,23 @@
+{
+	"for_description_of_this_file_see": "https://github.com/function61/turbobob",
+	"version_major": 1,
+	"project_name": "promswarmconnect",
+	"builders": [
+		{
+			"name": "default",
+			"mount_destination": "/go/src/github.com/function61/promswarmconnect",
+			"dev_command": [
+				"bash"
+			],
+			"dev_ports": [],
+			"pass_envs": []
+		}
+	],
+	"docker_images": [
+		{
+			"image": "fn61/promswarmconnect",
+			"dockerfile_path": "Dockerfile",
+			"auth_type": "creds_from_env"
+		}
+	]
+}
