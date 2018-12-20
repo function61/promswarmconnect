@@ -162,6 +162,7 @@ func pollNet(wg *sync.WaitGroup, m *Metrics) {
 func pollDisk(wg *sync.WaitGroup, m *Metrics) {
 	defer wg.Done()
 
+	// FIXME: this is container's filesystem
 	stat, err := linux.ReadDisk("/")
 
 	if err != nil {
