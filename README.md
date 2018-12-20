@@ -60,7 +60,7 @@ $ docker service create --network YOUR_NETWORK --name prometheus -p 9090:9090 \
 Example config file to be fed to Prometheus
 -------------------------------------------
 
-This is the file format that docker-prometheus-bridge generated for Prometheus:
+This is the file format that docker-prometheus-bridge generates for Prometheus:
 
 ```
 [
