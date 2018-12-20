@@ -27,6 +27,8 @@ Features:
 How to use
 ----------
 
+Run the image from Docker Hub (see top of README) with all the ENV variables mentioned below.
+
 Configure your Prometheus:
 [example configuration that works for us](https://github.com/function61/prometheus-conf/blob/master/prometheus.yml).
 
@@ -47,6 +49,13 @@ You need to define these ENV variables when running promswarmconnect:
 - `NETWORK_NAME` - name of the overlay network from which to scrape containers to Prometheus
 - `CLIENTCERT` - client cert in base64 format (`$ cat cert.pem | base64 -w 0`)
 - `CLIENTCERT_KEY` - client cert's key in base64 format (`$ cat cert.key | base64 -w 0`)
+
+
+How to build & develop
+----------------------
+
+[How to build & develop](https://github.com/function61/turbobob/blob/master/docs/external-how-to-build-and-dev.md)
+(with Turbo Bob, our build tool). It's easy and simple!
 
 
 Alternatives & links
