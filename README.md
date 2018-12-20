@@ -5,7 +5,9 @@ What?
 -----
 
 Syncs services/tasks from Docker Swarm to Prometheus by pretending to be a Triton service
-discovery endpoint, which is a built-in service discovery module in Prometheus.
+discovery endpoint, which is a
+[built-in service discovery module](https://github.com/prometheus/prometheus/tree/master/discovery/triton)
+in Prometheus.
 
 Features:
 
@@ -17,6 +19,9 @@ Features:
   nor promswarmconnect needs to run on the Swarm manager node.
 - Supports scoping Prometheus `job` label to a) container (default), b) host (think host-level
   metrics) or c) static string (think cluster-wide metrics).
+  [Read more](https://github.com/function61/promswarmconnect/blob/1eb89b3c0219f374aa116e6068ca02ac13b13f30/promswarmconnect/main.go#L189)
+
+![](docs/architecture.png)
 
 
 How to use
@@ -32,6 +37,9 @@ Docker's socket needs to be exposed over HTTPS with a client cert authentication
 [dockersockproxy](https://github.com/function61/dockersockproxy) for this. You can do the
 same with just pure Docker (expose the API over HTTPS) configuration, but I found it much
 easier to not mess with default Docker settings, but to do this by just running a container.
+
+Below configuration `CLIENTCERT` (and its key) refers to the client cert that is allowed to
+connect to the Docker socket over HTTPS.
 
 You need to define these ENV variables when running promswarmconnect:
 
