@@ -80,10 +80,11 @@ func resolveSelfSwarmIp(cli *client.Client) (string, error) {
 
 	selfNodeId := info.Swarm.NodeID
 
-	node, _, err := cli.NodeInspectWithRaw(ctx, selfNodeId)
+	node, raw, err := cli.NodeInspectWithRaw(ctx, selfNodeId)
 	if err != nil {
 		return "", err
 	}
+	defer raw.Close()
 
 	// 192.168.56.61:2377 => 192.168.56.61
 	ip, _, err := net.SplitHostPort(node.ManagerStatus.Addr)
