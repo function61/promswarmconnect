@@ -11,15 +11,10 @@ import (
 	"github.com/function61/gokit/logex"
 	"github.com/function61/gokit/ossignal"
 	"github.com/function61/gokit/stopper"
+	"github.com/function61/promswarmconnect/pkg/udocker"
 	"net"
 	"net/http"
 	"regexp"
-)
-
-const (
-	tasksEndpoint    = "/v1.24/tasks?filters=%7B%22desired-state%22%3A%5B%22running%22%5D%7D"
-	servicesEndpoint = "/v1.24/services"
-	nodesEndpoint    = "/v1.24/nodes"
 )
 
 type Service struct {
@@ -36,52 +31,38 @@ type ServiceInstance struct {
 	IPv4         string
 }
 
-func createDockerClient() (*http.Client, error) {
-	clientCertificate, err := loadClientCertificateFromEnv()
-	if err != nil {
-		return nil, err
-	}
-
-	tlsConfig := &tls.Config{
-		Certificates:       []tls.Certificate{*clientCertificate},
-		InsecureSkipVerify: true,
-	}
-
-	return &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}, nil
-}
-
 func listDockerServiceInstances(dockerUrl string, networkName string, dockerClient *http.Client) ([]Service, error) {
-	// both requests have to finish within this timeout
+	// all the requests have to finish within this timeout
 	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
 	defer cancel()
 
-	dockerTasks := []DockerTask{}
+	dockerTasks := []udocker.Task{}
 	if _, err := ezhttp.Send(
 		ctx,
 		http.MethodGet,
-		dockerUrl+tasksEndpoint,
+		dockerUrl+udocker.TasksEndpoint,
 		ezhttp.Client(dockerClient),
 		ezhttp.RespondsJson(&dockerTasks, true),
 	); err != nil {
 		return nil, err
 	}
 
-	dockerServices := []DockerService{}
+	dockerServices := []udocker.Service{}
 	if _, err := ezhttp.Send(
 		ctx,
 		http.MethodGet,
-		dockerUrl+servicesEndpoint,
+		dockerUrl+udocker.ServicesEndpoint,
 		ezhttp.Client(dockerClient),
 		ezhttp.RespondsJson(&dockerServices, true),
 	); err != nil {
 		return nil, err
 	}
 
-	dockerNodes := []DockerNode{}
+	dockerNodes := []udocker.Node{}
 	if _, err := ezhttp.Send(
 		ctx,
 		http.MethodGet,
-		dockerUrl+nodesEndpoint,
+		dockerUrl+udocker.NodesEndpoint,
 		ezhttp.Client(dockerClient),
 		ezhttp.RespondsJson(&dockerNodes, true),
 	); err != nil {
@@ -157,10 +138,13 @@ func registerTritonDiscoveryApi() error {
 		return err
 	}
 
-	dockerClient, err := createDockerClient()
+	dockerClient, dockerUrlTransformed, err := udocker.Client(dockerUrl)
 	if err != nil {
 		return err
 	}
+
+	// for unix sockets we need to fake "http://localhost"
+	dockerUrl = dockerUrlTransformed
 
 	// adapts Docker Swarm services to Prometheus by pretending to be Triton discovery service.
 	// requires also some hacking via Prometheus config, because we're passing data in fields
@@ -303,7 +287,7 @@ func main() {
 	}
 }
 
-func networkAttachmentForNetworkName(task DockerTask, networkName string) *DockerTaskNetworkAttachment {
+func networkAttachmentForNetworkName(task udocker.Task, networkName string) *udocker.TaskNetworkAttachment {
 	for _, attachment := range task.NetworksAttachments {
 		if attachment.Network.Spec.Name == networkName {
 			return &attachment
@@ -311,25 +295,6 @@ func networkAttachmentForNetworkName(task DockerTask, networkName string) *Docke
 	}
 
 	return nil
-}
-
-func loadClientCertificateFromEnv() (*tls.Certificate, error) {
-	clientCert, err := envvar.GetFromBase64Encoded("CLIENTCERT")
-	if err != nil {
-		return nil, err
-	}
-
-	clientCertKey, err := envvar.GetFromBase64Encoded("CLIENTCERT_KEY")
-	if err != nil {
-		return nil, err
-	}
-
-	clientKeypair, err := tls.X509KeyPair(clientCert, clientCertKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return &clientKeypair, nil
 }
 
 var envParseRe = regexp.MustCompile("^([^=]+)=(.*)")
@@ -353,7 +318,7 @@ func splitPortAndPath(hostPort string) (string, string) {
 	return matches[2], matches[3]
 }
 
-func nodeById(id string, nodes []DockerNode) *DockerNode {
+func nodeById(id string, nodes []udocker.Node) *udocker.Node {
 	for _, node := range nodes {
 		if node.ID == id {
 			return &node
