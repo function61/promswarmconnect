@@ -17,38 +17,114 @@ Features:
 - Supports overriding metrics endpoint (default `/metrics`) and port.
 - Supports clustering, so containers are discovered from all nodes. Neither Prometheus
   nor promswarmconnect needs to run on the Swarm manager node.
+    * promswarmconnect needs to run on Swarm manager if you use the `docker.sock` mount option
 - Supports scoping Prometheus `job` label to a) container (default), b) host (think host-level
   metrics) or c) static string (think cluster-wide metrics).
   [Read more](https://github.com/function61/promswarmconnect/blob/1eb89b3c0219f374aa116e6068ca02ac13b13f30/promswarmconnect/main.go#L189)
 
 ![](docs/architecture.png)
 
+NOTE: the drawing is for option 2). This is even simpler if you use option 1) with socket mount.
 
-How to use
-----------
 
-Run the image from Docker Hub (see top of README) with all the ENV variables mentioned below.
+How to deploy
+-------------
+
+Run the image from Docker Hub (see top of README) with the configuration mentioned below.
+Both options mention "VERSION" version of the image. You'll find the latest version from
+the Docker Hub. We don't currently publish "latest" tag so you the versions are immutable.
+
+You need to run promswarmconnect and Prometheus on the same network.
+
+### Option 1: run on Swarm manager node with mounted `docker.sock`
+
+This is the easiest option, but requires you to have a placement constraint to guarantee
+that promswarmconnect always runs on the manager node - its Docker socket is the only API
+with knowledge of the whole cluster state.
+
+```
+$ docker service create \
+	--name promswarmconnect \
+	--constraint node.role==manager \
+	--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+	--env "DOCKER_URL=unix:///var/run/docker.sock" \
+	--env "NETWORK_NAME=yourNetwork" \
+	--network yourNetwork \
+	"fn61/promswarmconnect:VERSION"
+```
+
+NOTE: `unix:..` contains three forward slashes!
+
+
+### Option 2: run on any node by having Docker's socket exposed over HTTPS
+
+This may be useful to you if you have other needs that also require you to expose Docker's
+port. For example I'm running [Portainer](https://www.portainer.io/) on my own computer
+and that needs to dial to Docker's socket in the server over TLS.
+
+Docker's socket needs to be exposed over HTTPS with a client cert authentication. We use
+[dockersockproxy](https://github.com/function61/dockersockproxy) for this. You can do the
+same with just pure Docker (expose the API over HTTPS) configuration, but I found it much
+easier to not mess with default Docker settings, and to do this by just deploying a container.
+
+Below configuration `DOCKER_CLIENTCERT` (and its key) refers to the client cert that is allowed to
+connect to the Docker socket over HTTPS. They can be encoded to base64 like this:
+
+- `$ cat cert.pem | base64 -w 0`
+- `$ cat cert.key | base64 -w 0`
+
+```
+$ docker service create \
+	--name promswarmconnect \
+	--env "DOCKER_URL=https://dockersockproxy:4431" \
+	--env "DOCKER_CLIENTCERT=..." \
+	--env "DOCKER_CLIENTCERT_KEY=..." \
+	--env "NETWORK_NAME=yourNetwork" \
+	--network yourNetwork \
+	"fn61/promswarmconnect:VERSION"
+```
+
+Obviously, you need to replace URL and port with your Docker socket's details.
+
+### Verify that it's working
+
+Before moving on to configure Prometheus, verify that promswarmconnect is working.
+
+Grab an Alpine container (on the same network), and verify that you can `$ curl` the API:
+
+```
+$ docker run --rm -it --network yourNetwork alpine sh
+$ apk add curl
+$ curl -k https://promswarmconnect/v1/discover
+{
+  "containers": [
+    {
+      "server_uuid": "/metrics",
+      "vm_alias": "10.0.1.7:8081",
+      "vm_brand": "",
+      "vm_image_uuid": "traefik_traefik",
+      "vm_uuid": "rsvltiqm6nbcj72ibi7bess0w"
+    },
+    {
+      "server_uuid": "/metrics",                 <-- __metrics_path__
+      "vm_alias": "10.0.1.15:80",                <-- __address__
+      "vm_brand": "",
+      "vm_image_uuid": "hellohttp_hellohttp",    <-- job (Docker service name)
+      "vm_uuid": "p44b6yr05ucmhpl0teiadq3jt"     <-- instance (Docker task ID)
+    }
+  ]
+}
+```
+
+
+Configuring Prometheus
+----------------------
 
 Configure your Prometheus:
 [example configuration that works for us](https://github.com/function61/prometheus-conf/blob/master/prometheus.yml).
 
 The `endpoint` needs to be your service name in Docker that you use to run promswarmconnect.
 Prometheus and promswarmconnect need to be in the same Docker network.
-
-Docker's socket needs to be exposed over HTTPS with a client cert authentication. We use
-[dockersockproxy](https://github.com/function61/dockersockproxy) for this. You can do the
-same with just pure Docker (expose the API over HTTPS) configuration, but I found it much
-easier to not mess with default Docker settings, but to do this by just running a container.
-
-Below configuration `CLIENTCERT` (and its key) refers to the client cert that is allowed to
-connect to the Docker socket over HTTPS.
-
-You need to define these ENV variables when running promswarmconnect:
-
-- `DOCKER_URL` - URL to Docker API (e.g. `https://dockersockproxy:4431`)
-- `NETWORK_NAME` - name of the overlay network from which to scrape containers to Prometheus
-- `CLIENTCERT` - client cert in base64 format (`$ cat cert.pem | base64 -w 0`)
-- `CLIENTCERT_KEY` - client cert's key in base64 format (`$ cat cert.key | base64 -w 0`)
 
 
 How to build & develop
