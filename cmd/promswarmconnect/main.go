@@ -248,7 +248,8 @@ func mainInternal(logl *logex.Leveled, stop *stopper.Stopper) error {
 		return err
 	}
 
-	tlsConfig, err := tlsSelfSignedConfig()
+	// dummy cert valid until 2028-12-18T07:57:25Z
+	serverCert, err := tls.X509KeyPair([]byte(dummyCert), []byte(dummyCertKey))
 	if err != nil {
 		return err
 	}
@@ -257,8 +258,10 @@ func mainInternal(logl *logex.Leveled, stop *stopper.Stopper) error {
 	// the code in Prometheus is hardcoded to use https. well, I guess encryption without
 	// authentication is still better than no encryption at all.
 	srv := http.Server{
-		Addr:      ":443",
-		TLSConfig: tlsConfig,
+		Addr: ":443",
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{serverCert},
+		},
 	}
 
 	go func() {
