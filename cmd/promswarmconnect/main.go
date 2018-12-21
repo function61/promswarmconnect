@@ -217,7 +217,9 @@ func registerTritonDiscoveryApi() error {
 			}
 		}
 
-		if err := json.NewEncoder(w).Encode(&TritonDiscoveryResponse{
+		jsonEncoder := json.NewEncoder(w)
+		jsonEncoder.SetIndent("", "  ")
+		if err := jsonEncoder.Encode(&TritonDiscoveryResponse{
 			Containers: containers,
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
