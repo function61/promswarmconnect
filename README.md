@@ -20,7 +20,7 @@ Features:
     * promswarmconnect needs to run on Swarm manager if you use the `docker.sock` mount option
 - Supports scoping Prometheus `job` label to a) container (default), b) host (think host-level
   metrics) or c) static string (think cluster-wide metrics).
-  [Read more](https://github.com/function61/promswarmconnect/blob/1eb89b3c0219f374aa116e6068ca02ac13b13f30/promswarmconnect/main.go#L189)
+  [Read more](https://github.com/function61/promswarmconnect/blob/ecc947d4aa6b29bb4595929d2bc23b1ec7bd5e9e/cmd/promswarmconnect/main.go#L173)
 
 ![](docs/architecture.png)
 
@@ -115,6 +115,10 @@ $ curl -k https://promswarmconnect/v1/discover
   ]
 }
 ```
+
+[More info here](https://github.com/function61/promswarmconnect/blob/ecc947d4aa6b29bb4595929d2bc23b1ec7bd5e9e/cmd/promswarmconnect/main.go#L207)
+on why the JSON keys are so different W.R.T. Prometheus labels they'll be relabeled at
+(see also our config example).
 
 
 Configuring Prometheus
