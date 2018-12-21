@@ -32,7 +32,7 @@ How to deploy
 
 Run the image from Docker Hub (see top of README) with the configuration mentioned below.
 Both options mention "VERSION" version of the image. You'll find the latest version from
-the Docker Hub. We don't currently publish "latest" tag so you the versions are immutable.
+the Docker Hub. We don't currently publish "latest" tag so the versions are immutable.
 
 You need to run promswarmconnect and Prometheus on the same network.
 
@@ -60,7 +60,7 @@ NOTE: `unix:..` contains three forward slashes!
 
 This may be useful to you if you have other needs that also require you to expose Docker's
 port. For example I'm running [Portainer](https://www.portainer.io/) on my own computer
-and that needs to dial to Docker's socket in the server over TLS.
+and that needs to dial to Docker's socket over TLS from the outside world.
 
 Docker's socket needs to be exposed over HTTPS with a client cert authentication. We use
 [dockersockproxy](https://github.com/function61/dockersockproxy) for this. You can do the
@@ -124,7 +124,6 @@ Configure your Prometheus:
 [example configuration that works for us](https://github.com/function61/prometheus-conf/blob/master/prometheus.yml).
 
 The `endpoint` needs to be your service name in Docker that you use to run promswarmconnect.
-Prometheus and promswarmconnect need to be in the same Docker network.
 
 
 How to build & develop
