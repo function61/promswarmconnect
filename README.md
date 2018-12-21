@@ -129,6 +129,25 @@ Configure your Prometheus:
 
 The `endpoint` needs to be your service name in Docker that you use to run promswarmconnect.
 
+Pro-tip: you could probably use
+[our Prometheus image](https://github.com/function61/prometheus-conf) (check the Docker
+Hub link) as-is, if not for production but at least to check out if this concept works for
+you!
+
+
+Considerations for running containers
+-------------------------------------
+
+promswarmconnect only picks up containers whose *service-level ENV vars* specify
+`METRICS_ENDPOINT=/metrics`. To use non-80 port, specify `METRICS_ENDPOINT=:8080/metrics`.
+The metrics path is also configurable, obviously.
+
+For a complete demo with dummy application, deploy:
+
+- promswarmconnect (instructions were at this document)
+- our prometheus image (instructions were at above pro-tip) and
+- [hellohttp](https://github.com/joonas-fi/hellohttp) (it has built-in Prometheus metrics)
+
 
 How to build & develop
 ----------------------
