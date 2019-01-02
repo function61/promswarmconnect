@@ -12,12 +12,6 @@ import (
 	"net/url"
 )
 
-const (
-	TasksEndpoint    = "/v1.24/tasks?filters=%7B%22desired-state%22%3A%5B%22running%22%5D%7D"
-	ServicesEndpoint = "/v1.24/services"
-	NodesEndpoint    = "/v1.24/nodes"
-)
-
 func Client(dockerUrl string) (*http.Client, string, error) {
 	u, err := url.Parse(dockerUrl)
 	if err != nil {

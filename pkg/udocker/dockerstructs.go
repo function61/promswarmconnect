@@ -1,5 +1,24 @@
 package udocker
 
+const (
+	SwarmServiceNameLabelKey = "com.docker.swarm.service.name"
+)
+
+// stupid Docker requires "inspect" to get actually interesting details
+type ContainerListItem struct {
+	Id string `json:"Id"`
+}
+
+type Container struct {
+	Id     string          `json:"Id"`
+	Config ContainerConfig `json:"Config"`
+}
+
+type ContainerConfig struct {
+	Labels map[string]string `json:"Labels"`
+	Env    []string          `json:"Env"`
+}
+
 type Service struct {
 	ID   string      `json:"ID"`
 	Spec ServiceSpec `json:"Spec"`
