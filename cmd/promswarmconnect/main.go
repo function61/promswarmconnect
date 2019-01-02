@@ -110,7 +110,7 @@ func listDockerServiceInstances(dockerUrl string, networkName string, dockerClie
 		envs := map[string]string{}
 
 		for _, envSerialized := range dockerService.Spec.TaskTemplate.ContainerSpec.Env {
-			envKey, envVal := parseEnvString(envSerialized)
+			envKey, envVal := envvar.Parse(envSerialized)
 			if envKey != "" {
 				envs[envKey] = envVal
 			}
@@ -297,17 +297,6 @@ func networkAttachmentForNetworkName(task udocker.Task, networkName string) *udo
 	}
 
 	return nil
-}
-
-var envParseRe = regexp.MustCompile("^([^=]+)=(.*)")
-
-func parseEnvString(serialized string) (string, string) {
-	matches := envParseRe.FindStringSubmatch(serialized)
-	if matches == nil {
-		return "", ""
-	}
-
-	return matches[1], matches[2]
 }
 
 // ":443/metrics" => ("443", "/metrics")

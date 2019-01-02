@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f1adfa1da446fc6eb96360564a9167cd83caeaf163f156156f0f5a6e2de0937f"
+  digest = "1:ff5d5315fb70ba417c4eae3afee1b235d4729779ef40573c0b4c9a396d00670d"
   name = "github.com/function61/gokit"
   packages = [
     "dynversion",
@@ -14,7 +14,7 @@
     "stopper",
   ]
   pruneopts = "UT"
-  revision = "55cf44e7c1d95663dbd0c062dd5431882ce803ab"
+  revision = "aed9c6f63461b4ce88f94cc299cc067355cd3128"
 
 [solve-meta]
   analyzer-name = "dep"
