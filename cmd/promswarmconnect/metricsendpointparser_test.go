@@ -64,6 +64,64 @@ func TestServiceToMetricsEndpointsOverrideInstanceWithHostname(t *testing.T) {
 	assertEndpoint(t, endpoints[0], "job<hellohttp> instance<node1.example.com> address<10.0.0.2:80> path</metrics>")
 }
 
+// V2 = use more modern specifier
+func TestServiceToMetricsEndpointsOverrideInstanceWithHostnameV2(t *testing.T) {
+	envs := map[string]string{
+		"METRICS_ENDPOINT": "/metrics,instance=_HOSTNAME_",
+	}
+
+	endpoints := serviceToMetricsEndpoints([]Service{serviceDef(envs, inst1)})
+	assert.Assert(t, len(endpoints) == 1)
+
+	assertEndpoint(t, endpoints[0], "job<hellohttp> instance<node1.example.com> address<10.0.0.2:80> path</metrics>")
+}
+
+func TestServiceToMetricsEndpointsMultipleEndpoints(t *testing.T) {
+	envs := map[string]string{
+		"METRICS_ENDPOINT":  "/metrics/foo,job=foo",
+		"METRICS_ENDPOINT2": "/metrics/bar,job=bar",
+	}
+
+	endpoints := serviceToMetricsEndpoints([]Service{serviceDef(envs, inst1, inst2)})
+	assert.Assert(t, len(endpoints) == 4)
+
+	assertEndpoint(t, endpoints[0], "job<foo> instance<task1> address<10.0.0.2:80> path</metrics/foo>")
+	assertEndpoint(t, endpoints[1], "job<foo> instance<task2> address<10.0.0.3:80> path</metrics/foo>")
+	assertEndpoint(t, endpoints[2], "job<bar> instance<task1> address<10.0.0.2:80> path</metrics/bar>")
+	assertEndpoint(t, endpoints[3], "job<bar> instance<task2> address<10.0.0.3:80> path</metrics/bar>")
+}
+
+func TestParseEndpointSpecifier(t *testing.T) {
+	oneSpecifier := func(t *testing.T, input string, expectedRepr string) {
+		t.Helper()
+
+		spec, err := parseEndpointSpecifier(input)
+		var actualRepr string
+		if err != nil {
+			actualRepr = err.Error()
+		} else {
+			actualRepr = fmt.Sprintf(
+				"path<%s> port<%s> job<%s> instance<%s>",
+				spec.path,
+				spec.port,
+				spec.jobOverride,
+				spec.instanceOverride)
+		}
+
+		assert.EqualString(t, actualRepr, expectedRepr)
+	}
+
+	oneSpecifier(t, ":80/metrics", "path</metrics> port<80> job<> instance<>")
+	oneSpecifier(t, "/metrics,job=overriddenJob", "path</metrics> port<> job<overriddenJob> instance<>")
+	oneSpecifier(t, "/metrics,instance=overriddenInstance", "path</metrics> port<> job<> instance<overriddenInstance>")
+	oneSpecifier(t, "/metrics,job=hello,instance=inst1", "path</metrics> port<> job<hello> instance<inst1>")
+
+	// failures
+	oneSpecifier(t, "", "unable to parse host:port")
+	oneSpecifier(t, "/metrics,foo=bar", "unknown key: foo")
+	oneSpecifier(t, "/metrics,job=", "empty value for key: job")
+}
+
 func assertEndpoint(t *testing.T, endpoint MetricsEndpoint, expectedRepr string) {
 	t.Helper()
 
