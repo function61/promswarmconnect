@@ -13,8 +13,43 @@ type TritonDiscoveryResponse struct {
 	Containers []TritonDiscoveryResponseContainer `json:"containers"`
 }
 
-func serviceInstancesToTritonContainers(services []Service) TritonDiscoveryResponse {
+type MetricsEndpoint struct {
+	// https://prometheus.io/docs/concepts/jobs_instances/
+	Job         string
+	Instance    string
+	Address     string // __address__
+	MetricsPath string // __metrics_path__
+
+	Service *Service
+}
+
+func metricsEndpointToTritonResponse(endpoints []MetricsEndpoint) TritonDiscoveryResponse {
 	containers := []TritonDiscoveryResponseContainer{}
+
+	for _, endpoint := range endpoints {
+		// these pieces of info are assigned to pretty much random keys, knowing that
+		// we must redirect them into other/correct fields anyway by hacking with
+		// Prometheus relabeling ("VMAlias actually means __address_" etc) configuration.
+		// without relabeling the Triton plugin code in Prometheus requires DNS suffixes etc.
+		containers = append(containers, TritonDiscoveryResponseContainer{
+			VMImageUUID: endpoint.Job,
+			VMUUID:      endpoint.Instance,
+			VMAlias:     endpoint.Address,
+			ServerUUID:  endpoint.MetricsPath,
+		})
+	}
+
+	return TritonDiscoveryResponse{
+		Containers: containers,
+	}
+}
+
+func serviceInstancesToTritonContainers(services []Service) TritonDiscoveryResponse {
+	return metricsEndpointToTritonResponse(serviceToMetricsEndpoints(services))
+}
+
+func serviceToMetricsEndpoints(services []Service) []MetricsEndpoint {
+	metricsEndpoints := []MetricsEndpoint{}
 
 	for _, service := range services {
 		// don't add all services, but only those whitelisted by this explicit setting
@@ -62,20 +97,14 @@ func serviceInstancesToTritonContainers(services []Service) TritonDiscoveryRespo
 				}
 			}
 
-			// these pieces of info are assigned to pretty much random keys, knowing that
-			// we must redirect them into other/correct fields anyway by hacking with
-			// Prometheus relabeling ("VMAlias actually means __address_" etc) configuration.
-			// without relabeling the Triton plugin code in Prometheus requires DNS suffixes etc.
-			containers = append(containers, TritonDiscoveryResponseContainer{
-				VMImageUUID: service.Name,        // relabeled: job
-				VMUUID:      instanceLabel,       // relabeled: instance
-				VMAlias:     hostAndPort,         // relabeled: __address__
-				ServerUUID:  metricsEndpointPath, // relabeled: __metrics_path__
+			metricsEndpoints = append(metricsEndpoints, MetricsEndpoint{
+				Job:         service.Name,
+				Instance:    instanceLabel,
+				Address:     hostAndPort,
+				MetricsPath: metricsEndpointPath,
 			})
 		}
 	}
 
-	return TritonDiscoveryResponse{
-		Containers: containers,
-	}
+	return metricsEndpoints
 }
