@@ -269,8 +269,7 @@ func mainInternal(logl *logex.Leveled, stop *stopper.Stopper) error {
 
 	logl.Info.Printf("Started v%s", dynversion.Version)
 
-	err = srv.ListenAndServeTLS("", "")
-	if err != http.ErrServerClosed { // not graceful close?
+	if err := srv.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
 		return err
 	}
 
