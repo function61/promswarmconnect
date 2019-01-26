@@ -10,7 +10,6 @@ import (
 	"github.com/function61/gokit/stopper"
 	"github.com/function61/promswarmconnect/pkg/udocker"
 	"net/http"
-	"regexp"
 )
 
 type Service struct {
@@ -125,14 +124,4 @@ func main() {
 	if err := runHttpServer(mainlogl, workers.Stopper()); err != nil {
 		mainlogl.Error.Fatal(err)
 	}
-}
-
-// ":443/metrics" => ("443", "/metrics")
-// "/metrics" => ("", "/metrics")
-var splitPortAndPathRe = regexp.MustCompile("^(:([0-9]+))?(.+)")
-
-func splitPortAndPath(hostPort string) (string, string) {
-	matches := splitPortAndPathRe.FindStringSubmatch(hostPort)
-
-	return matches[2], matches[3]
 }

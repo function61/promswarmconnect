@@ -1,5 +1,9 @@
 package main
 
+import (
+	"regexp"
+)
+
 type MetricsEndpoint struct {
 	// https://prometheus.io/docs/concepts/jobs_instances/
 	Job         string
@@ -73,4 +77,14 @@ func serviceToMetricsEndpoints(services []Service) []MetricsEndpoint {
 	}
 
 	return metricsEndpoints
+}
+
+// ":443/metrics" => ("443", "/metrics")
+// "/metrics" => ("", "/metrics")
+var splitPortAndPathRe = regexp.MustCompile("^(:([0-9]+))?(.+)")
+
+func splitPortAndPath(hostPort string) (string, string) {
+	matches := splitPortAndPathRe.FindStringSubmatch(hostPort)
+
+	return matches[2], matches[3]
 }
