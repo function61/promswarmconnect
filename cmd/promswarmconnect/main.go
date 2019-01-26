@@ -68,7 +68,7 @@ func registerTritonDiscoveryApi() error {
 	return nil
 }
 
-func mainInternal(logl *logex.Leveled, stop *stopper.Stopper) error {
+func runHttpServer(logl *logex.Leveled, stop *stopper.Stopper) error {
 	if err := registerTritonDiscoveryApi(); err != nil {
 		return err
 	}
@@ -120,9 +120,9 @@ func main() {
 		workers.StopAllWorkersAndWait()
 	}(logex.Levels(logex.Prefix("entrypoint", rootLogger)))
 
-	mainlogl := logex.Levels(logex.Prefix("mainInternal", rootLogger))
+	mainlogl := logex.Levels(logex.Prefix("runHttpServer", rootLogger))
 
-	if err := mainInternal(mainlogl, workers.Stopper()); err != nil {
+	if err := runHttpServer(mainlogl, workers.Stopper()); err != nil {
 		mainlogl.Error.Fatal(err)
 	}
 }
