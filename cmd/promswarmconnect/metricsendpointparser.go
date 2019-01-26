@@ -1,5 +1,15 @@
 package main
 
+type MetricsEndpoint struct {
+	// https://prometheus.io/docs/concepts/jobs_instances/
+	Job         string
+	Instance    string
+	Address     string // __address__
+	MetricsPath string // __metrics_path__
+
+	Service *Service
+}
+
 // parses Prometheus endpoints from Service info provided by a discovery backend
 
 func serviceToMetricsEndpoints(services []Service) []MetricsEndpoint {
@@ -56,6 +66,8 @@ func serviceToMetricsEndpoints(services []Service) []MetricsEndpoint {
 				Instance:    instanceLabel,
 				Address:     hostAndPort,
 				MetricsPath: metricsEndpointPath,
+
+				Service: &service,
 			})
 		}
 	}

@@ -13,16 +13,6 @@ type TritonDiscoveryResponse struct {
 	Containers []TritonDiscoveryResponseContainer `json:"containers"`
 }
 
-type MetricsEndpoint struct {
-	// https://prometheus.io/docs/concepts/jobs_instances/
-	Job         string
-	Instance    string
-	Address     string // __address__
-	MetricsPath string // __metrics_path__
-
-	Service *Service
-}
-
 func metricsEndpointToTritonResponse(endpoints []MetricsEndpoint) TritonDiscoveryResponse {
 	containers := []TritonDiscoveryResponseContainer{}
 
