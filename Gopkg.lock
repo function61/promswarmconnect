@@ -3,9 +3,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ff5d5315fb70ba417c4eae3afee1b235d4729779ef40573c0b4c9a396d00670d"
+  digest = "1:1ed50ee5d79aaaf467af6b7f53662b7488ea74f4c95cc7fe82b742d2f337ab21"
   name = "github.com/function61/gokit"
   packages = [
+    "assert",
     "dynversion",
     "envvar",
     "ezhttp",
@@ -20,6 +21,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/function61/gokit/assert",
     "github.com/function61/gokit/dynversion",
     "github.com/function61/gokit/envvar",
     "github.com/function61/gokit/ezhttp",
