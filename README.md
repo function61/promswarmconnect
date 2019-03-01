@@ -121,6 +121,62 @@ on why the JSON keys are so different W.R.T. Prometheus labels they'll be relabe
 (see also our config example).
 
 
+Running in a swarm via docker-compose
+----------------------------------------
+
+```
+
+You can launch promswarmconnect via docker-compose, an entry would look similar to the below for the promswarmconnect container.
+
+promswarmconnect:
+    image: fn61/promswarmconnect:20190126_1620_7b450c47
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_URL=unix:///var/run/docker.sock
+      - NETWORK_NAME=<CHANGETOSTACKNETNAME>
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+```
+
+then for each service you wish to monitor metrics for, add an environment var as noted above in this readme, for example:
+```
+nats_monitoring:
+    image: ainsey11/nats_prometheus_exporter
+    environment:
+      - METRICS_ENDPOINT=:7777/metrics
+    ports:
+      - 7777:7777
+    command: ["-varz", "-connz", "-routez", "-subz", "http://nats:8222"]
+
+```
+
+Exporting per node metrics via multiple containers in a service
+--------------------------------------------------------------
+
+The prime use case of this is when running something like node_exporter, or cAdvisor as a service with a global constraint
+basically, each docker host will have a cAdvisor container running, the problem with this is that by default promswarmconnect doesn't return by default, the hostname of the host the container is on
+this makes it difficult to differentiate which container is which when the data is surfaced into prometheus itself,
+
+as described in Issue Number 4, you can edit the environment variable of the container you wish to autodiscover, as follows:
+``` METRICS_ENDPOINT=/metrics,instance=_HOSTNAME_ ````
+
+this will then return a value similar to:
+
+```
+    {
+      "server_uuid": "/metrics",
+      "vm_alias": "10.0.3.86:8080",
+      "vm_brand": "",
+      "vm_image_uuid": "test_stack1_cadvisor",
+      "vm_uuid": "nc-docker-1"
+    },
+
+```
+
+
 Configuring Prometheus
 ----------------------
 
