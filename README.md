@@ -124,10 +124,8 @@ on why the JSON keys are so different W.R.T. Prometheus labels they'll be relabe
 Running in a swarm via docker-compose
 ----------------------------------------
 
-```
-
 You can launch promswarmconnect via docker-compose, an entry would look similar to the below for the promswarmconnect container.
-
+```
 promswarmconnect:
     image: fn61/promswarmconnect:20190126_1620_7b450c47
     volumes:
@@ -141,7 +139,7 @@ promswarmconnect:
 
 ```
 
-then for each service you wish to monitor metrics for, add an environment var as noted above in this readme, for example:
+Then for each service you wish to monitor metrics for, add an environment var as noted above in this readme, for example:
 ```
 nats_monitoring:
     image: ainsey11/nats_prometheus_exporter
@@ -161,7 +159,7 @@ basically, each docker host will have a cAdvisor container running, the problem 
 this makes it difficult to differentiate which container is which when the data is surfaced into prometheus itself,
 
 as described in Issue Number 4, you can edit the environment variable of the container you wish to autodiscover, as follows:
-``` METRICS_ENDPOINT=/metrics,instance=_HOSTNAME_ ````
+``` METRICS_ENDPOINT=/metrics,instance=_HOSTNAME_ ```
 
 this will then return a value similar to:
 
