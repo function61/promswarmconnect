@@ -5,12 +5,13 @@
 	"builders": [
 		{
 			"name": "default",
+			"uses": "docker://fn61/buildkit-golang:20190316_0913_96b56b86",
 			"mount_destination": "/go/src/github.com/function61/promswarmconnect",
-			"dev_command": [
-				"bash"
-			],
-			"dev_ports": [],
-			"pass_envs": []
+			"workdir": "/go/src/github.com/function61/promswarmconnect",
+			"commands": {
+				"build": ["bin/build.sh"],
+				"dev": ["bash"]
+			}
 		}
 	],
 	"docker_images": [
@@ -19,5 +20,8 @@
 			"dockerfile_path": "Dockerfile",
 			"auth_type": "creds_from_env"
 		}
-	]
+	],
+	"os_arches": {
+		"linux-amd64": true
+	}
 }
