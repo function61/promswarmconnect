@@ -73,6 +73,12 @@ func listDockerServiceInstances(dockerUrl string, networkName string, dockerClie
 				continue
 			}
 
+			// task is not allocated to run on an explicit node yet, skip it since
+			// our context is discovering running containers.
+			if task.NodeID == "" {
+				continue
+			}
+
 			node := nodeById(task.NodeID, dockerNodes)
 			if node == nil {
 				return nil, fmt.Errorf("node %s not found for task %s", task.NodeID, task.ID)
