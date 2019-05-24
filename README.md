@@ -125,7 +125,7 @@ Running in a swarm via docker-compose
 ----------------------------------------
 
 You can launch promswarmconnect via docker-compose, an entry would look similar to the below for the promswarmconnect container.
-```
+```yaml
 promswarmconnect:
     image: fn61/promswarmconnect:20190126_1620_7b450c47
     volumes:
@@ -140,7 +140,7 @@ promswarmconnect:
 ```
 
 Then for each service you wish to monitor metrics for, add an environment var as noted above in this readme, for example:
-```
+```yaml
 nats_monitoring:
     image: ainsey11/nats_prometheus_exporter
     environment:
@@ -163,7 +163,7 @@ as described in Issue Number 4, you can edit the environment variable of the con
 
 this will then return a value similar to:
 
-```
+```json
     {
       "server_uuid": "/metrics",
       "vm_alias": "10.0.3.86:8080",
