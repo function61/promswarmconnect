@@ -203,6 +203,14 @@ For a complete demo with dummy application, deploy:
 - [hellohttp](https://github.com/joonas-fi/hellohttp) (it has built-in Prometheus metrics)
 
 
+FAQ
+---
+
+> Can I read `DOCKER_CLIENTCERT` or `DOCKER_CLIENTCERT_KEY` from file or use Docker secrets?
+
+Yes, see #10
+
+
 How to build & develop
 ----------------------
 

@@ -7,9 +7,12 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/function61/gokit/envvar"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 )
 
 func Client(dockerUrl string) (*http.Client, string, error) {
@@ -29,7 +32,7 @@ func Client(dockerUrl string) (*http.Client, string, error) {
 		}, "http://localhost", nil
 	}
 
-	clientCertificate, err := loadClientCertificateFromEnv()
+	clientCertificate, err := loadClientCertificate()
 	if err != nil {
 		return nil, "", err
 	}
@@ -42,13 +45,13 @@ func Client(dockerUrl string) (*http.Client, string, error) {
 	return &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}, dockerUrl, nil
 }
 
-func loadClientCertificateFromEnv() (*tls.Certificate, error) {
-	clientCert, err := envvar.GetFromBase64Encoded("DOCKER_CLIENTCERT")
+func loadClientCertificate() (*tls.Certificate, error) {
+	clientCert, err := getDataFromEnvBase64OrFile("DOCKER_CLIENTCERT")
 	if err != nil {
 		return nil, err
 	}
 
-	clientCertKey, err := envvar.GetFromBase64Encoded("DOCKER_CLIENTCERT_KEY")
+	clientCertKey, err := getDataFromEnvBase64OrFile("DOCKER_CLIENTCERT_KEY")
 	if err != nil {
 		return nil, err
 	}
@@ -59,4 +62,16 @@ func loadClientCertificateFromEnv() (*tls.Certificate, error) {
 	}
 
 	return &clientKeypair, nil
+}
+
+// read ENV var (identified by key) value as base64, or if value begins with "@/home/foo/data.txt",
+// value is read from that file. this is safe because "@" is not part of base64 alphabet
+func getDataFromEnvBase64OrFile(key string) ([]byte, error) {
+	if strings.HasPrefix(os.Getenv(key), "@") {
+		path := os.Getenv(key)[1:] // remove leading "@"
+
+		return ioutil.ReadFile(path)
+	}
+
+	return envvar.GetFromBase64Encoded(key)
 }
