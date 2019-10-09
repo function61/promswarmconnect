@@ -208,7 +208,7 @@ FAQ
 
 > Can I read `DOCKER_CLIENTCERT` or `DOCKER_CLIENTCERT_KEY` from file or use Docker secrets?
 
-Yes, see #10
+Yes, see [#10](https://github.com/function61/promswarmconnect/issues/10)
 
 
 How to build & develop
