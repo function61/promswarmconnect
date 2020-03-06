@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/function61/gokit/envvar"
 	"github.com/function61/gokit/ezhttp"
-	"github.com/function61/promswarmconnect/pkg/udocker"
+	"github.com/function61/gokit/udocker"
 	"net"
 	"net/http"
 )
@@ -16,9 +16,8 @@ func listDockerServiceInstances(dockerUrl string, networkName string, dockerClie
 	defer cancel()
 
 	dockerTasks := []udocker.Task{}
-	if _, err := ezhttp.Send(
+	if _, err := ezhttp.Get(
 		ctx,
-		http.MethodGet,
 		dockerUrl+udocker.TasksEndpoint,
 		ezhttp.Client(dockerClient),
 		ezhttp.RespondsJson(&dockerTasks, true),
@@ -27,9 +26,8 @@ func listDockerServiceInstances(dockerUrl string, networkName string, dockerClie
 	}
 
 	dockerServices := []udocker.Service{}
-	if _, err := ezhttp.Send(
+	if _, err := ezhttp.Get(
 		ctx,
-		http.MethodGet,
 		dockerUrl+udocker.ServicesEndpoint,
 		ezhttp.Client(dockerClient),
 		ezhttp.RespondsJson(&dockerServices, true),
@@ -38,9 +36,8 @@ func listDockerServiceInstances(dockerUrl string, networkName string, dockerClie
 	}
 
 	dockerNodes := []udocker.Node{}
-	if _, err := ezhttp.Send(
+	if _, err := ezhttp.Get(
 		ctx,
-		http.MethodGet,
 		dockerUrl+udocker.NodesEndpoint,
 		ezhttp.Client(dockerClient),
 		ezhttp.RespondsJson(&dockerNodes, true),

@@ -8,8 +8,11 @@ import (
 	"github.com/function61/gokit/logex"
 	"github.com/function61/gokit/ossignal"
 	"github.com/function61/gokit/stopper"
-	"github.com/function61/promswarmconnect/pkg/udocker"
+	"github.com/function61/gokit/udocker"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"strings"
 )
 
 type Service struct {
@@ -27,17 +30,20 @@ type ServiceInstance struct {
 }
 
 func registerTritonDiscoveryApi() error {
-	networkName, err := envvar.Get("NETWORK_NAME")
+	networkName, err := envvar.Required("NETWORK_NAME")
 	if err != nil {
 		return err
 	}
 
-	dockerUrl, err := envvar.Get("DOCKER_URL")
+	dockerUrl, err := envvar.Required("DOCKER_URL")
 	if err != nil {
 		return err
 	}
 
-	dockerClient, dockerUrlTransformed, err := udocker.Client(dockerUrl)
+	dockerClient, dockerUrlTransformed, err := udocker.Client(
+		dockerUrl,
+		clientCertFromEnvOrFile,
+		true)
 	if err != nil {
 		return err
 	}
@@ -124,4 +130,35 @@ func main() {
 	if err := runHttpServer(mainlogl, workers.Stopper()); err != nil {
 		mainlogl.Error.Fatal(err)
 	}
+}
+
+func clientCertFromEnvOrFile() (*tls.Certificate, error) {
+	clientCert, err := getDataFromEnvBase64OrFile("DOCKER_CLIENTCERT")
+	if err != nil {
+		return nil, err
+	}
+
+	clientCertKey, err := getDataFromEnvBase64OrFile("DOCKER_CLIENTCERT_KEY")
+	if err != nil {
+		return nil, err
+	}
+
+	clientKeypair, err := tls.X509KeyPair(clientCert, clientCertKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &clientKeypair, nil
+}
+
+// read ENV var (identified by key) value as base64, or if value begins with "@/home/foo/data.txt",
+// value is read from that file. this is safe because "@" is not part of base64 alphabet
+func getDataFromEnvBase64OrFile(key string) ([]byte, error) {
+	if strings.HasPrefix(os.Getenv(key), "@") {
+		path := os.Getenv(key)[1:] // remove leading "@"
+
+		return ioutil.ReadFile(path)
+	}
+
+	return envvar.RequiredFromBase64Encoded(key)
 }
