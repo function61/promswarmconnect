@@ -69,13 +69,7 @@ func registerTritonDiscoveryApi(mux *http.ServeMux) error {
 			return
 		}
 
-		tritonResponse := serviceInstancesToTritonContainers(services)
-
-		jsonEncoder := json.NewEncoder(w)
-		jsonEncoder.SetIndent("", "  ")
-		if err := jsonEncoder.Encode(&tritonResponse); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		jsonResponse(w, serviceInstancesToTritonContainers(services))
 	})
 
 	return nil
@@ -157,6 +151,18 @@ func getDataFromEnvBase64OrFile(key string) ([]byte, error) {
 	}
 
 	return envvar.RequiredFromBase64Encoded(key)
+}
+
+func jsonResponse(w http.ResponseWriter, output interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+
+	jsonEncoder := json.NewEncoder(w)
+	jsonEncoder.SetIndent("", "  ")
+	if err := jsonEncoder.Encode(output); err != nil {
+		// not safe to respond with HTTP error, because headers are most likely sent and
+		// connection is probably broken
+		log.Printf("jsonResponse: %v", err)
+	}
 }
 
 func exitIfError(err error) {
