@@ -10,9 +10,14 @@ import (
 	"net/http"
 )
 
-func listDockerServiceInstances(dockerUrl string, networkName string, dockerClient *http.Client) ([]Service, error) {
+func listDockerServiceInstances(
+	ctx context.Context,
+	dockerUrl string,
+	networkName string,
+	dockerClient *http.Client,
+) ([]Service, error) {
 	// all the requests have to finish within this timeout
-	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
+	ctx, cancel := context.WithTimeout(ctx, ezhttp.DefaultTimeout10s)
 	defer cancel()
 
 	dockerTasks := []udocker.Task{}

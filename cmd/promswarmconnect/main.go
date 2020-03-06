@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"github.com/function61/gokit/dynversion"
 	"github.com/function61/gokit/envvar"
+	"github.com/function61/gokit/httputils"
 	"github.com/function61/gokit/logex"
 	"github.com/function61/gokit/ossignal"
-	"github.com/function61/gokit/stopper"
+	"github.com/function61/gokit/taskrunner"
 	"github.com/function61/gokit/udocker"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -29,7 +33,7 @@ type ServiceInstance struct {
 	IPv4         string
 }
 
-func registerTritonDiscoveryApi() error {
+func registerTritonDiscoveryApi(mux *http.ServeMux) error {
 	networkName, err := envvar.Required("NETWORK_NAME")
 	if err != nil {
 		return err
@@ -54,8 +58,12 @@ func registerTritonDiscoveryApi() error {
 	// adapts Docker Swarm services to Prometheus by pretending to be Triton discovery service.
 	// requires also some hacking via Prometheus config, because we're passing data in fields
 	// in different format than Prometheus expects
-	http.HandleFunc("/v1/discover", func(w http.ResponseWriter, r *http.Request) {
-		services, err := listDockerServiceInstances(dockerUrl, networkName, dockerClient)
+	mux.HandleFunc("/v1/discover", func(w http.ResponseWriter, r *http.Request) {
+		services, err := listDockerServiceInstances(
+			r.Context(),
+			dockerUrl,
+			networkName,
+			dockerClient)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -73,8 +81,12 @@ func registerTritonDiscoveryApi() error {
 	return nil
 }
 
-func runHttpServer(logl *logex.Leveled, stop *stopper.Stopper) error {
-	if err := registerTritonDiscoveryApi(); err != nil {
+func mainInternal(ctx context.Context, logger *log.Logger) error {
+	logl := logex.Levels(logger)
+
+	mux := http.NewServeMux()
+
+	if err := registerTritonDiscoveryApi(mux); err != nil {
 		return err
 	}
 
@@ -87,49 +99,33 @@ func runHttpServer(logl *logex.Leveled, stop *stopper.Stopper) error {
 	// we need TLS even though calling Prometheus specifies InsecureSkipVerify, because
 	// the code in Prometheus is hardcoded to use https. well, I guess encryption without
 	// authentication is still better than no encryption at all.
-	srv := http.Server{
-		Addr: ":443",
+	srv := &http.Server{
+		Handler: mux,
+		Addr:    ":443",
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{serverCert},
 		},
 	}
 
-	go func() {
-		defer stop.Done()
-		defer logl.Info.Printf("stopped")
+	tasks := taskrunner.New(ctx, logger)
 
-		<-stop.Signal
+	tasks.Start("listener "+srv.Addr, func(_ context.Context, _ string) error {
+		return httputils.RemoveGracefulServerClosedError(srv.ListenAndServeTLS("", ""))
+	})
 
-		if err := srv.Shutdown(nil); err != nil {
-			logl.Error.Fatalf("Shutdown() failed: %v", err)
-		}
-	}()
+	tasks.Start("listenershutdowner", httputils.ServerShutdownTask(srv))
 
 	logl.Info.Printf("Started v%s", dynversion.Version)
 
-	if err := srv.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
-		return err
-	}
-
-	return nil
+	return tasks.Wait()
 }
 
 func main() {
 	rootLogger := logex.StandardLogger()
 
-	workers := stopper.NewManager()
-
-	go func(logl *logex.Leveled) {
-		logl.Info.Printf("Got %s; stopping", <-ossignal.InterruptOrTerminate())
-
-		workers.StopAllWorkersAndWait()
-	}(logex.Levels(logex.Prefix("entrypoint", rootLogger)))
-
-	mainlogl := logex.Levels(logex.Prefix("runHttpServer", rootLogger))
-
-	if err := runHttpServer(mainlogl, workers.Stopper()); err != nil {
-		mainlogl.Error.Fatal(err)
-	}
+	exitIfError(mainInternal(
+		ossignal.InterruptOrTerminateBackgroundCtx(rootLogger),
+		rootLogger))
 }
 
 func clientCertFromEnvOrFile() (*tls.Certificate, error) {
@@ -161,4 +157,11 @@ func getDataFromEnvBase64OrFile(key string) ([]byte, error) {
 	}
 
 	return envvar.RequiredFromBase64Encoded(key)
+}
+
+func exitIfError(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
