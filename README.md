@@ -179,7 +179,7 @@ Configuring Prometheus
 ----------------------
 
 Configure your Prometheus:
-[example configuration that works for us](https://github.com/function61/prometheus-conf/blob/master/prometheus.yml).
+[example configuration that works for us](https://github.com/function61/prometheus-conf/blob/b953521f7334655136bb5b3f5adba1ded7536703/prometheus.yml).
 
 The `endpoint` needs to be your service name in Docker that you use to run promswarmconnect.
 
