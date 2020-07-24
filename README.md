@@ -1,6 +1,15 @@
 ![Build status](https://github.com/function61/promswarmconnect/workflows/Build/badge.svg)
 [![Download](https://img.shields.io/docker/pulls/fn61/promswarmconnect.svg?style=for-the-badge)](https://hub.docker.com/r/fn61/promswarmconnect/)
 
+
+IMPORTANT NOTICE
+----------------
+
+[Prometheus recently added native Swarm support](https://prometheus.io/docs/prometheus/2.20/configuration/configuration/#dockerswarm_sd_config)
+
+For more details see [Issue #14](https://github.com/function61/promswarmconnect/issues/14)
+
+
 What?
 -----
 
