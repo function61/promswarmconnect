@@ -5,7 +5,7 @@
 IMPORTANT NOTICE
 ----------------
 
-[Prometheus recently added native Swarm support](https://prometheus.io/docs/prometheus/2.20/configuration/configuration/#dockerswarm_sd_config)
+[Prometheus recently added native Swarm support](https://prometheus.io/docs/guides/dockerswarm/)
 
 For more details see [Issue #14](https://github.com/function61/promswarmconnect/issues/14)
 
