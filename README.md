@@ -221,6 +221,10 @@ FAQ
 
 Yes, see [#10](https://github.com/function61/promswarmconnect/issues/10)
 
+> TLS?
+
+See [#12](https://github.com/function61/promswarmconnect/issues/12#issuecomment-664344435)
+
 
 How to build & develop
 ----------------------
