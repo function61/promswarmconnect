@@ -11,6 +11,25 @@ import (
 	"github.com/function61/gokit/udocker"
 )
 
+func listDockerServiceAndContainerInstances(
+	ctx context.Context,
+	dockerUrl string,
+	networkName string,
+	dockerClient *http.Client,
+) ([]Service, error) {
+	services, err := listDockerServiceInstances(ctx, dockerUrl, networkName, dockerClient)
+	if err != nil {
+		return nil, err
+	}
+
+	containersAsServices, err := listDockerContainerInstances(ctx, dockerUrl, networkName, dockerClient)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(services, containersAsServices...), nil
+}
+
 func listDockerServiceInstances(
 	ctx context.Context,
 	dockerUrl string,
@@ -109,6 +128,74 @@ func listDockerServiceInstances(
 			Image:     dockerService.Spec.TaskTemplate.ContainerSpec.Image,
 			ENVs:      envs,
 			Instances: instances,
+		})
+	}
+
+	return services, nil
+}
+
+func listDockerContainerInstances(
+	ctx context.Context,
+	dockerUrl string,
+	networkName string,
+	dockerClient *http.Client,
+) ([]Service, error) {
+	services := []Service{}
+
+	containers := []udocker.ContainerListItem{}
+	if _, err := ezhttp.Get(
+		ctx,
+		dockerUrl+udocker.ListContainersEndpoint,
+		ezhttp.Client(dockerClient),
+		ezhttp.RespondsJson(&containers, true),
+	); err != nil {
+		return nil, err
+	}
+
+	for _, container := range containers {
+		if len(container.Names) == 0 {
+			continue
+		}
+
+		// these are already handled by more specific handler
+		if _, isSwarmService := container.Labels[udocker.SwarmServiceNameLabelKey]; isSwarmService {
+			continue
+		}
+
+		ipAddress := ""
+		if settings, found := container.NetworkSettings.Networks[networkName]; found {
+			ipAddress = settings.IPAddress // prefer IP from the asked networkName
+		}
+
+		if settings, found := container.NetworkSettings.Networks["bridge"]; ipAddress == "" && found {
+			ipAddress = settings.IPAddress // fall back to bridge IP if not found
+		}
+
+		if ipAddress == "" {
+			continue
+		}
+
+		// stupid Docker doesn't return ENV vars with ListContainers call, so let's lie that
+		// labels are ENV vars and inch closer to our goal of being able to specify metrics
+		// endpoint as a label (so, now labels only work for docker-compose or manually
+		// launched containers)
+		labelsAsEnvs := map[string]string{}
+		for key, value := range container.Labels {
+			labelsAsEnvs[key] = value
+		}
+
+		services = append(services, Service{
+			Name:  container.Names[0],
+			Image: container.Image,
+			ENVs:  labelsAsEnvs,
+			Instances: []ServiceInstance{
+				{
+					DockerTaskId: container.Id,
+					NodeID:       "dummy",
+					NodeHostname: "dummy",
+					IPv4:         ipAddress,
+				},
+			},
 		})
 	}
 

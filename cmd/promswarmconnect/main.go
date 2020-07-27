@@ -59,7 +59,7 @@ func registerTritonDiscoveryApi(mux *http.ServeMux) error {
 	// requires also some hacking via Prometheus config, because we're passing data in fields
 	// in different format than Prometheus expects
 	mux.HandleFunc("/v1/discover", func(w http.ResponseWriter, r *http.Request) {
-		services, err := listDockerServiceInstances(
+		services, err := listDockerServiceAndContainerInstances(
 			r.Context(),
 			dockerUrl,
 			networkName,
