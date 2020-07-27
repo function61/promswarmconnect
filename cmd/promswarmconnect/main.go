@@ -75,6 +75,14 @@ func registerTritonDiscoveryApi(mux *http.ServeMux) error {
 	return nil
 }
 
+func main() {
+	rootLogger := logex.StandardLogger()
+
+	osutil.ExitIfError(mainInternal(
+		osutil.CancelOnInterruptOrTerminate(rootLogger),
+		rootLogger))
+}
+
 func mainInternal(ctx context.Context, logger *log.Logger) error {
 	logl := logex.Levels(logger)
 
@@ -111,14 +119,6 @@ func mainInternal(ctx context.Context, logger *log.Logger) error {
 	logl.Info.Printf("Started v%s", dynversion.Version)
 
 	return tasks.Wait()
-}
-
-func main() {
-	rootLogger := logex.StandardLogger()
-
-	osutil.ExitIfError(mainInternal(
-		osutil.CancelOnInterruptOrTerminate(rootLogger),
-		rootLogger))
 }
 
 func clientCertFromEnvOrFile() (*tls.Certificate, error) {
