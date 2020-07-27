@@ -190,7 +190,7 @@ func listDockerContainerInstances(
 			ENVs:  labelsAsEnvs,
 			Instances: []ServiceInstance{
 				{
-					DockerTaskId: container.Id,
+					DockerTaskId: container.Id[0:12], // Docker ps uses 12 hexits
 					NodeID:       "dummy",
 					NodeHostname: "dummy",
 					IPv4:         ipAddress,
