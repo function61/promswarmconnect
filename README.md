@@ -110,14 +110,14 @@ $ curl -k https://promswarmconnect/v1/discover
     {
       "server_uuid": "/metrics",
       "vm_alias": "10.0.1.7:8081",
-      "vm_brand": "",
+      "vm_brand": "http",
       "vm_image_uuid": "traefik_traefik",
       "vm_uuid": "rsvltiqm6nbcj72ibi7bess0w"
     },
     {
       "server_uuid": "/metrics",                 <-- __metrics_path__
       "vm_alias": "10.0.1.15:80",                <-- __address__
-      "vm_brand": "",
+      "vm_brand": "http",                        <-- __scheme__
       "vm_image_uuid": "hellohttp_hellohttp",    <-- job (Docker service name)
       "vm_uuid": "p44b6yr05ucmhpl0teiadq3jt"     <-- instance (Docker task ID)
     }
@@ -176,7 +176,7 @@ this will then return a value similar to:
     {
       "server_uuid": "/metrics",
       "vm_alias": "10.0.3.86:8080",
-      "vm_brand": "",
+      "vm_brand": "http",
       "vm_image_uuid": "test_stack1_cadvisor",
       "vm_uuid": "nc-docker-1"
     },
@@ -188,7 +188,9 @@ Configuring Prometheus
 ----------------------
 
 Configure your Prometheus:
-[example configuration that works for us](https://github.com/function61/prometheus-conf/blob/b953521f7334655136bb5b3f5adba1ded7536703/prometheus.yml).
+[example configuration that works for us](https://github.com/function61/prometheus-conf/blob/e5c70f03674a87f1b1ffed9555f8386a7a84b758/prometheus.yml#L14).
+
+**The relabeling steps are really important**
 
 The `endpoint` needs to be your service name in Docker that you use to run promswarmconnect.
 

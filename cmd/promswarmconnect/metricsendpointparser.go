@@ -13,6 +13,7 @@ type MetricsEndpoint struct {
 	Instance    string
 	Address     string // __address__
 	MetricsPath string // __metrics_path__
+	Scheme      string // __scheme__
 
 	Service *Service
 }
@@ -92,6 +93,14 @@ func processSuffix(service Service, suff string) []MetricsEndpoint {
 
 	metricsEndpoints := []MetricsEndpoint{}
 
+	scheme := func() string {
+		if metricsEndpointPort == "443" { // FIXME: support non-default ports also..
+			return "https"
+		} else {
+			return "http"
+		}
+	}()
+
 	for _, instance := range service.Instances {
 		hostAndPort := instance.IPv4 + ":" + metricsEndpointPort
 
@@ -109,6 +118,7 @@ func processSuffix(service Service, suff string) []MetricsEndpoint {
 			Instance:    instanceLabel,
 			Address:     hostAndPort,
 			MetricsPath: spec.path,
+			Scheme:      scheme,
 
 			Service: &service,
 		})

@@ -26,6 +26,7 @@ func metricsEndpointToTritonResponse(endpoints []MetricsEndpoint) TritonDiscover
 			VMUUID:      endpoint.Instance,
 			VMAlias:     endpoint.Address,
 			ServerUUID:  endpoint.MetricsPath,
+			VMBrand:     endpoint.Scheme,
 		})
 	}
 
