@@ -1,5 +1,7 @@
 package main
 
+// dummy cert valid until 2028-12-18T07:57:25Z
+
 const (
 	dummyCert = `-----BEGIN CERTIFICATE-----
 MIIBpTCCASygAwIBAgIQDsTUCPYmLiljAbeoyAHYKjAKBggqhkjOPQQDAzAbMRkw

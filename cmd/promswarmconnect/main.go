@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 	"github.com/function61/gokit/envvar"
 	"github.com/function61/gokit/httputils"
 	"github.com/function61/gokit/logex"
-	"github.com/function61/gokit/ossignal"
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/gokit/taskrunner"
 	"github.com/function61/gokit/udocker"
 )
@@ -85,7 +84,6 @@ func mainInternal(ctx context.Context, logger *log.Logger) error {
 		return err
 	}
 
-	// dummy cert valid until 2028-12-18T07:57:25Z
 	serverCert, err := tls.X509KeyPair([]byte(dummyCert), []byte(dummyCertKey))
 	if err != nil {
 		return err
@@ -104,7 +102,7 @@ func mainInternal(ctx context.Context, logger *log.Logger) error {
 
 	tasks := taskrunner.New(ctx, logger)
 
-	tasks.Start("listener "+srv.Addr, func(_ context.Context, _ string) error {
+	tasks.Start("listener "+srv.Addr, func(_ context.Context) error {
 		return httputils.RemoveGracefulServerClosedError(srv.ListenAndServeTLS("", ""))
 	})
 
@@ -118,8 +116,8 @@ func mainInternal(ctx context.Context, logger *log.Logger) error {
 func main() {
 	rootLogger := logex.StandardLogger()
 
-	exitIfError(mainInternal(
-		ossignal.InterruptOrTerminateBackgroundCtx(rootLogger),
+	osutil.ExitIfError(mainInternal(
+		osutil.CancelOnInterruptOrTerminate(rootLogger),
 		rootLogger))
 }
 
@@ -163,12 +161,5 @@ func jsonResponse(w http.ResponseWriter, output interface{}) {
 		// not safe to respond with HTTP error, because headers are most likely sent and
 		// connection is probably broken
 		log.Printf("jsonResponse: %v", err)
-	}
-}
-
-func exitIfError(err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
 	}
 }
