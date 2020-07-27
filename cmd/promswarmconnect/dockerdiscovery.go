@@ -175,6 +175,11 @@ func listDockerContainerInstances(
 			continue
 		}
 
+		serviceName := container.Names[0]
+		if composeServiceName, has := container.Labels["com.docker.compose.service"]; has {
+			serviceName = composeServiceName
+		}
+
 		// stupid Docker doesn't return ENV vars with ListContainers call, so let's lie that
 		// labels are ENV vars and inch closer to our goal of being able to specify metrics
 		// endpoint as a label (so, now labels only work for docker-compose or manually
@@ -185,7 +190,7 @@ func listDockerContainerInstances(
 		}
 
 		services = append(services, Service{
-			Name:  container.Names[0],
+			Name:  serviceName,
 			Image: container.Image,
 			ENVs:  labelsAsEnvs,
 			Instances: []ServiceInstance{
