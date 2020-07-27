@@ -51,7 +51,7 @@ This is the easiest option, but requires you to have a placement constraint to g
 that promswarmconnect always runs on the manager node - its Docker socket is the only API
 with knowledge of the whole cluster state.
 
-```
+```console
 $ docker service create \
 	--name promswarmconnect \
 	--constraint node.role==manager \
@@ -82,7 +82,7 @@ connect to the Docker socket over HTTPS. They can be encoded to base64 like this
 - `$ cat cert.pem | base64 -w 0`
 - `$ cat cert.key | base64 -w 0`
 
-```
+```console
 $ docker service create \
 	--name promswarmconnect \
 	--env "DOCKER_URL=https://dockersockproxy:4431" \
@@ -101,7 +101,7 @@ Before moving on to configure Prometheus, verify that promswarmconnect is workin
 
 Grab an Alpine container (on the same network), and verify that you can `$ curl` the API:
 
-```
+```console
 $ docker run --rm -it --network yourNetwork alpine sh
 $ apk add curl
 $ curl -k https://promswarmconnect/v1/discover
