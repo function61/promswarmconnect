@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
+
 	"github.com/function61/gokit/envvar"
 	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/gokit/udocker"
-	"net"
-	"net/http"
 )
 
 func listDockerServiceInstances(

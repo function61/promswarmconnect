@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/function61/gokit/assert"
 	"testing"
+
+	"github.com/function61/gokit/assert"
 )
 
 func TestServiceInstancesToTritonContainers(t *testing.T) {

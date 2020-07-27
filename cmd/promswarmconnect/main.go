@@ -5,6 +5,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/function61/gokit/dynversion"
 	"github.com/function61/gokit/envvar"
 	"github.com/function61/gokit/httputils"
@@ -12,11 +18,6 @@ import (
 	"github.com/function61/gokit/ossignal"
 	"github.com/function61/gokit/taskrunner"
 	"github.com/function61/gokit/udocker"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"strings"
 )
 
 type Service struct {

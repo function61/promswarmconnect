@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/function61/gokit/assert"
 	"testing"
+
+	"github.com/function61/gokit/assert"
 )
 
 func TestServiceToMetricsEndpointsNo(t *testing.T) {
