@@ -45,7 +45,7 @@ func listDockerServiceInstances(
 		ctx,
 		dockerUrl+udocker.TasksEndpoint,
 		ezhttp.Client(dockerClient),
-		ezhttp.RespondsJson(&dockerTasks, true),
+		ezhttp.RespondsJsonAllowUnknownFields(&dockerTasks),
 	); err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func listDockerServiceInstances(
 		ctx,
 		dockerUrl+udocker.ServicesEndpoint,
 		ezhttp.Client(dockerClient),
-		ezhttp.RespondsJson(&dockerServices, true),
+		ezhttp.RespondsJsonAllowUnknownFields(&dockerServices),
 	); err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func listDockerServiceInstances(
 		ctx,
 		dockerUrl+udocker.NodesEndpoint,
 		ezhttp.Client(dockerClient),
-		ezhttp.RespondsJson(&dockerNodes, true),
+		ezhttp.RespondsJsonAllowUnknownFields(&dockerNodes),
 	); err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func listDockerContainerInstances(
 		ctx,
 		dockerUrl+udocker.ListContainersEndpoint,
 		ezhttp.Client(dockerClient),
-		ezhttp.RespondsJson(&containers, true),
+		ezhttp.RespondsJsonAllowUnknownFields(&containers),
 	); err != nil {
 		return nil, err
 	}
