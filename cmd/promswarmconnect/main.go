@@ -10,13 +10,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/function61/gokit/dynversion"
-	"github.com/function61/gokit/envvar"
-	"github.com/function61/gokit/httputils"
-	"github.com/function61/gokit/logex"
-	"github.com/function61/gokit/osutil"
-	"github.com/function61/gokit/taskrunner"
-	"github.com/function61/gokit/udocker"
+	"github.com/function61/gokit/app/dynversion"
+	"github.com/function61/gokit/app/udocker"
+	"github.com/function61/gokit/log/logex"
+	"github.com/function61/gokit/net/http/httputils"
+	"github.com/function61/gokit/os/osutil"
 )
 
 type Service struct {
@@ -34,12 +32,12 @@ type ServiceInstance struct {
 }
 
 func registerTritonDiscoveryApi(mux *http.ServeMux) error {
-	networkName, err := envvar.Required("NETWORK_NAME")
+	networkName, err := osutil.GetenvRequired("NETWORK_NAME")
 	if err != nil {
 		return err
 	}
 
-	dockerUrl, err := envvar.Required("DOCKER_URL")
+	dockerUrl, err := osutil.GetenvRequired("DOCKER_URL")
 	if err != nil {
 		return err
 	}
@@ -108,17 +106,9 @@ func mainInternal(ctx context.Context, logger *log.Logger) error {
 		},
 	}
 
-	tasks := taskrunner.New(ctx, logger)
-
-	tasks.Start("listener "+srv.Addr, func(_ context.Context) error {
-		return httputils.RemoveGracefulServerClosedError(srv.ListenAndServeTLS("", ""))
-	})
-
-	tasks.Start("listenershutdowner", httputils.ServerShutdownTask(srv))
-
 	logl.Info.Printf("Started v%s", dynversion.Version)
 
-	return tasks.Wait()
+	return httputils.CancelableServer(ctx, srv, func() error { return srv.ListenAndServeTLS("", "") })
 }
 
 func clientCertFromEnvOrFile() (*tls.Certificate, error) {
@@ -149,7 +139,7 @@ func getDataFromEnvBase64OrFile(key string) ([]byte, error) {
 		return ioutil.ReadFile(path)
 	}
 
-	return envvar.RequiredFromBase64Encoded(key)
+	return osutil.GetenvRequiredFromBase64(key)
 }
 
 func jsonResponse(w http.ResponseWriter, output interface{}) {

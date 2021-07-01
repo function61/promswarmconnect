@@ -6,9 +6,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/function61/gokit/envvar"
-	"github.com/function61/gokit/ezhttp"
-	"github.com/function61/gokit/udocker"
+	"github.com/function61/gokit/app/udocker"
+	"github.com/function61/gokit/net/http/ezhttp"
+	"github.com/function61/gokit/os/osutil"
 )
 
 func listDockerServiceAndContainerInstances(
@@ -117,7 +117,7 @@ func listDockerServiceInstances(
 		envs := map[string]string{}
 
 		for _, envSerialized := range dockerService.Spec.TaskTemplate.ContainerSpec.Env {
-			envKey, envVal := envvar.Parse(envSerialized)
+			envKey, envVal := osutil.ParseEnv(envSerialized)
 			if envKey != "" {
 				envs[envKey] = envVal
 			}

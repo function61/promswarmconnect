@@ -2,4 +2,4 @@ module github.com/function61/promswarmconnect
 
 go 1.13
 
-require github.com/function61/gokit v0.0.0-20200715130529-d3e870268fc9
+require github.com/function61/gokit v0.0.0-20210630170103-9f51059ede2a
