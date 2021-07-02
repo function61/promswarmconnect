@@ -80,21 +80,6 @@ func listDockerServiceInstances(
 				continue
 			}
 
-			var firstIp net.IP = nil
-			attachment := networkAttachmentForNetworkName(task, networkName)
-			if attachment != nil {
-				// for some reason Docker insists on stuffing the CIDR after the IP
-				var err error
-				firstIp, _, err = net.ParseCIDR(attachment.Addresses[0])
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			if firstIp == nil {
-				continue
-			}
-
 			// task is not allocated to run on an explicit node yet, skip it since
 			// our context is discovering running containers.
 			if task.NodeID == "" {
@@ -106,11 +91,37 @@ func listDockerServiceInstances(
 				return nil, fmt.Errorf("node %s not found for task %s", task.NodeID, task.ID)
 			}
 
+			ip, err := func() (string, error) {
+				if attachment := networkAttachmentForNetworkName(task, networkName); attachment != nil && len(attachment.Addresses) > 0 {
+					// for some reason Docker insists on stuffing the CIDR after the IP
+					firstIp, _, err := net.ParseCIDR(attachment.Addresses[0])
+					if err != nil {
+						return "", err
+					}
+
+					return firstIp.String(), nil
+				}
+
+				// fallback for host networking
+				if hostAttachment := networkAttachmentForNetworkName(task, "host"); hostAttachment != nil && node.Status.Addr != "" {
+					return node.Status.Addr, nil
+				}
+
+				return "", nil
+			}()
+			if err != nil {
+				return nil, err
+			}
+
+			if ip == "" { // failed to find address for the task
+				continue
+			}
+
 			instances = append(instances, ServiceInstance{
 				DockerTaskId: task.ID,
 				NodeID:       node.ID,
 				NodeHostname: node.Description.Hostname,
-				IPv4:         firstIp.String(),
+				IPv4:         ip,
 			})
 		}
 
