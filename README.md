@@ -2,12 +2,10 @@
 [![Download](https://img.shields.io/docker/pulls/fn61/promswarmconnect.svg?style=for-the-badge)](https://hub.docker.com/r/fn61/promswarmconnect/)
 
 
-IMPORTANT NOTICE
-----------------
-
-[Prometheus recently added native Swarm support](https://prometheus.io/docs/guides/dockerswarm/)
-
-For more details see [Issue #14](https://github.com/function61/promswarmconnect/issues/14)
+> [!WARNING]  
+> [Prometheus recently added native Swarm support](https://prometheus.io/docs/guides/dockerswarm/) (therefore this project might be considered unnecessary)
+> 
+> For more details see [Issue #14](https://github.com/function61/promswarmconnect/issues/14)
 
 
 What?
